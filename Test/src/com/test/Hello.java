@@ -5,9 +5,12 @@ import java.awt.Toolkit;
 
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 
 import com.test.excel.utils.ExcelUtil;
 import com.test.excel.utils.ExelTitleUtil;
+import com.test.vo.FormBean;
 
 import javax.swing.JButton;
 import javax.swing.JFileChooser;
@@ -18,6 +21,7 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.File;
 import java.io.IOException;
+import java.util.List;
 import java.util.Map;
 import java.awt.GridLayout;
 
@@ -28,6 +32,16 @@ public class Hello {
 	private JButton button;
 	
 	private JLabel lblNewLabel;
+	
+	
+	int screenWidth ;//获取屏幕的宽
+
+	int screenHeight ;//获取屏幕的高
+	
+	
+	int windowWidth;// 获得窗口宽
+
+	int windowHeight; // 获得窗口高
 
 	/**
 	 * Launch the application.
@@ -72,6 +86,7 @@ public class Hello {
 
 		
 		 lblNewLabel = new JLabel("New label");
+		 lblNewLabel.setBounds(frame.getWidth()/10, frame.getWidth()/20, 500, 500);
 		frame.getContentPane().add(lblNewLabel);
 	
 	
@@ -123,10 +138,30 @@ public class Hello {
 	}
 	
 	
+	
 	private void readExcel(File file){
+		ExcelUtil  excelUtil =new ExcelUtil();
+		try {
+			List<FormBean> formBeans=	excelUtil.readExcel(file.getAbsolutePath());
+           System.out.println(formBeans.toString());
+		
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+	}
+	/**
+	 * key=15---value=工时费
+key=17---value=维修人员姓名
+	 * @param file
+	 */
+	
+	private void readTitleExcel(File file){
 		ExelTitleUtil  exelTitleUtil =new ExelTitleUtil();
 		try {
 			Map< Integer,String> map=	exelTitleUtil.readTitle(file.getAbsolutePath());
+			reshGridAdater(1, map);
 			for (Map.Entry entry : map.entrySet()) {       
 			    
 			    Integer key = (Integer) entry.getKey( );    
@@ -143,4 +178,31 @@ public class Hello {
 		}
 	}
 
+	/**
+	 * 
+	 * @param row 行
+	 * @param column 列
+	 */
+    private void reshGridAdater(int row,Map< Integer,String> map){
+    	System.out.println("map.size()="+map.size());
+        JPanel panel = new JPanel(new GridLayout(row,(map.size()+1)));
+        
+        //加一些标签  就能显示了
+        
+		for (Map.Entry entry : map.entrySet()) {    
+			
+		    Integer key = (Integer) entry.getKey( );    
+		    String value = (String) entry.getValue(); 
+			JLabel jLabel=new JLabel();
+			jLabel.setText(value);
+		    
+			panel.add(jLabel);
+	
+		    
+		} 
+
+        JScrollPane scrollPane = new JScrollPane(panel);
+        scrollPane.setBounds(10, 10, windowWidth, windowHeight);
+        frame.getContentPane().add(scrollPane);
+    }
 }

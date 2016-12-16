@@ -7,9 +7,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import org.apache.poi.hssf.usermodel.HSSFCell;
 import org.apache.poi.hssf.usermodel.HSSFRichTextString;
@@ -22,6 +20,8 @@ import org.apache.poi.xssf.usermodel.XSSFRow;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
+import com.test.vo.FormBean;
+
 
 
 /**
@@ -30,7 +30,7 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
  */
 public class ExcelUtil {
     
-    public void writeExcel(List<TableItemVo> list, String path) throws Exception {
+    public void writeExcel(List<FormBean> list, String path) throws Exception {
         if (list == null) {
             return;
         } else if (path == null || Common.EMPTY.equals(path)) {
@@ -58,7 +58,7 @@ public class ExcelUtil {
      * @return
      * @throws IOException
      */
-    public List<TableItemVo> readExcel(String path) throws IOException {
+    public List<FormBean> readExcel(String path) throws IOException {
         if (path == null || Common.EMPTY.equals(path)) {
             return null;
         } else {
@@ -82,12 +82,12 @@ public class ExcelUtil {
      * @return
      * @throws IOException
      */
-    public List<TableItemVo> readXlsx(String path) throws IOException {
+    public List<FormBean> readXlsx(String path) throws IOException {
         System.out.println(Common.PROCESSING + path);
         InputStream is = new FileInputStream(path);
         XSSFWorkbook xssfWorkbook = new XSSFWorkbook(is);
-        TableItemVo tableItemVo = null;
-        List<TableItemVo> list = new ArrayList<TableItemVo>();
+        FormBean formBean = null;
+        List<FormBean> list = new ArrayList<FormBean>();
         // Read the Sheet
         for (int numSheet = 0; numSheet < xssfWorkbook.getNumberOfSheets(); numSheet++) {
             XSSFSheet xssfSheet = xssfWorkbook.getSheetAt(numSheet);
@@ -98,17 +98,13 @@ public class ExcelUtil {
             for (int rowNum = 1; rowNum <= xssfSheet.getLastRowNum(); rowNum++) {
                 XSSFRow xssfRow = xssfSheet.getRow(rowNum);
                 if (xssfRow != null) {
-                	tableItemVo = new TableItemVo();
-                    XSSFCell no = xssfRow.getCell(0);
-                    XSSFCell name = xssfRow.getCell(1);
-                    XSSFCell age = xssfRow.getCell(2);
-                    XSSFCell score = xssfRow.getCell(3);
-                    //TableItemVo
-//                    tableItemVo.setNo(getValue(no));
-//                    tableItemVo.setName(getValue(name));
-//                    tableItemVo.setAge(getValue(age));
-//                    tableItemVo.setScore(Float.valueOf(getValue(score)));
-//                    list.add(tableItemVo);
+                	formBean = new FormBean();
+                    XSSFCell money = xssfRow.getCell(15);
+                    XSSFCell name = xssfRow.getCell(17);
+                    formBean.setMoney(getValue(money));
+                    formBean.setPeopleName(getValue(name));
+                    list.add(formBean);
+
                 }
             }
         }
@@ -121,32 +117,30 @@ public class ExcelUtil {
      * @return
      * @throws IOException
      */
-    public List<TableItemVo> readXls(String path) throws IOException {
+    public List<FormBean> readXls(String path) throws IOException {
         System.out.println(Common.PROCESSING + path);
         InputStream is = new FileInputStream(path);
         HSSFWorkbook hssfWorkbook = new HSSFWorkbook(is);
-        TableItemVo tableItemVo = null;
-        List<TableItemVo> list = new ArrayList<TableItemVo>();
+        FormBean formBean = null;
+        List<FormBean> list = new ArrayList<FormBean>();
         // Read the Sheet
         for (int numSheet = 0; numSheet < hssfWorkbook.getNumberOfSheets(); numSheet++) {
             HSSFSheet hssfSheet = hssfWorkbook.getSheetAt(numSheet);
             if (hssfSheet == null) {
                 continue;
-            }
+            } 
+            
             // Read the Row
             for (int rowNum = 1; rowNum <= hssfSheet.getLastRowNum(); rowNum++) {
                 HSSFRow hssfRow = hssfSheet.getRow(rowNum);
                 if (hssfRow != null) {
-                	tableItemVo = new TableItemVo();
-                    HSSFCell no = hssfRow.getCell(0);
-                    HSSFCell name = hssfRow.getCell(1);
-                    HSSFCell age = hssfRow.getCell(2);
-                    HSSFCell score = hssfRow.getCell(3);
-//                    tableItemVo.setNo(getValue(no));
-//                    tableItemVo.setName(getValue(name));
-//                    tableItemVo.setAge(getValue(age));
-//                    tableItemVo.setScore(Float.valueOf(getValue(score)));
-//                    list.add(tableItemVo);
+                	formBean = new FormBean();
+                    HSSFCell money = hssfRow.getCell(15);
+                    HSSFCell name = hssfRow.getCell(17);
+                    formBean.setMoney(getValue(money));
+                    formBean.setPeopleName(getValue(name));
+                    list.add(formBean);
+
                 }
             }
         }
@@ -175,7 +169,7 @@ public class ExcelUtil {
         }
     }
     
-    public void writeXls(List<TableItemVo> list, String path) throws Exception {
+    public void writeXls(List<FormBean> list, String path) throws Exception {
         if (list == null) {
             return;
         }
@@ -193,16 +187,16 @@ public class ExcelUtil {
         //
         for (int i = 0; i < countColumnNum; i++) {
             HSSFRow row = sheet.createRow(i + 1);
-            TableItemVo tableItemVo = list.get(i);
+            FormBean FormBean = list.get(i);
             for (int column = 0; column < options.length; column++) {
                 HSSFCell no = row.createCell(0);
                 HSSFCell name = row.createCell(1);
                 HSSFCell age = row.createCell(2);
                 HSSFCell score = row.createCell(3);
-//                no.setCellValue(tableItemVo.getNo());
-//                name.setCellValue(tableItemVo.getName());
-//                age.setCellValue(tableItemVo.getAge());
-//                score.setCellValue(tableItemVo.getScore());
+//                no.setCellValue(FormBean.getNo());
+//                name.setCellValue(FormBean.getName());
+//                age.setCellValue(FormBean.getAge());
+//                score.setCellValue(FormBean.getScore());
             }
         }
         File file = new File(path);
@@ -212,7 +206,7 @@ public class ExcelUtil {
         os.close();
     }
     
-    public void writeXlsx(List<TableItemVo> list, String path) throws Exception {
+    public void writeXlsx(List<FormBean> list, String path) throws Exception {
         if (list == null) {
             return;
         }
@@ -231,16 +225,16 @@ public class ExcelUtil {
         //
         for (int i = 0; i < countColumnNum; i++) {
             XSSFRow row = sheet.createRow(i + 1);
-            TableItemVo tableItemVo = list.get(i);
+            FormBean FormBean = list.get(i);
             for (int column = 0; column < options.length; column++) {
                 XSSFCell no = row.createCell(0);
                 XSSFCell name = row.createCell(1);
                 XSSFCell age = row.createCell(2);
                 XSSFCell score = row.createCell(3);
-//                no.setCellValue(tableItemVo.getNo());
-//                name.setCellValue(tableItemVo.getName());
-//                age.setCellValue(tableItemVo.getAge());
-//                score.setCellValue(tableItemVo.getScore());
+//                no.setCellValue(FormBean.getNo());
+//                name.setCellValue(FormBean.getName());
+//                age.setCellValue(FormBean.getAge());
+//                score.setCellValue(FormBean.getScore());
             }
         }
         File file = new File(path);
