@@ -6,6 +6,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -21,6 +22,7 @@ import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 import com.test.vo.FormBean;
+import com.test.vo.TotalBillBean;
 
 
 
@@ -30,7 +32,7 @@ import com.test.vo.FormBean;
  */
 public class ExcelUtil {
     
-    public void writeExcel(List<FormBean> list, String path) throws Exception {
+    public void writeExcel(List<TotalBillBean> list, String path) throws Exception {
         if (list == null) {
             return;
         } else if (path == null || Common.EMPTY.equals(path)) {
@@ -86,7 +88,6 @@ public class ExcelUtil {
         System.out.println(Common.PROCESSING + path);
         InputStream is = new FileInputStream(path);
         XSSFWorkbook xssfWorkbook = new XSSFWorkbook(is);
-        FormBean formBean = null;
         List<FormBean> list = new ArrayList<FormBean>();
         // Read the Sheet
         for (int numSheet = 0; numSheet < xssfWorkbook.getNumberOfSheets(); numSheet++) {
@@ -98,11 +99,11 @@ public class ExcelUtil {
             for (int rowNum = 1; rowNum <= xssfSheet.getLastRowNum(); rowNum++) {
                 XSSFRow xssfRow = xssfSheet.getRow(rowNum);
                 if (xssfRow != null) {
-                	formBean = new FormBean();
                     XSSFCell money = xssfRow.getCell(15);
                     XSSFCell name = xssfRow.getCell(17);
-                    formBean.setMoney(getValue(money));
-                    formBean.setPeopleName(getValue(name));
+          
+                    
+                    FormBean formBean =generFormBean( getValue(money),getValue(name));
                     list.add(formBean);
 
                 }
@@ -121,7 +122,6 @@ public class ExcelUtil {
         System.out.println(Common.PROCESSING + path);
         InputStream is = new FileInputStream(path);
         HSSFWorkbook hssfWorkbook = new HSSFWorkbook(is);
-        FormBean formBean = null;
         List<FormBean> list = new ArrayList<FormBean>();
         // Read the Sheet
         for (int numSheet = 0; numSheet < hssfWorkbook.getNumberOfSheets(); numSheet++) {
@@ -131,14 +131,14 @@ public class ExcelUtil {
             } 
             
             // Read the Row
-            for (int rowNum = 1; rowNum <= hssfSheet.getLastRowNum(); rowNum++) {
+            for (int rowNum = 1; rowNum <hssfSheet.getLastRowNum(); rowNum++) {
                 HSSFRow hssfRow = hssfSheet.getRow(rowNum);
                 if (hssfRow != null) {
-                	formBean = new FormBean();
+              
                     HSSFCell money = hssfRow.getCell(15);
                     HSSFCell name = hssfRow.getCell(17);
-                    formBean.setMoney(getValue(money));
-                    formBean.setPeopleName(getValue(name));
+               
+                    FormBean formBean =generFormBean( getValue(money),getValue(name));
                     list.add(formBean);
 
                 }
@@ -169,7 +169,7 @@ public class ExcelUtil {
         }
     }
     
-    public void writeXls(List<FormBean> list, String path) throws Exception {
+    public void writeXls(List<TotalBillBean> list, String path) throws Exception {
         if (list == null) {
             return;
         }
@@ -179,7 +179,7 @@ public class ExcelUtil {
         // option at first row.
         HSSFRow firstRow = sheet.createRow(0);
         HSSFCell[] firstCells = new HSSFCell[countColumnNum];
-        String[] options = { "no", "name", "age", "score" };
+        String[] options = { "name", "money"};
         for (int j = 0; j < options.length; j++) {
             firstCells[j] = firstRow.createCell(j);
             firstCells[j].setCellValue(new HSSFRichTextString(options[j]));
@@ -187,16 +187,14 @@ public class ExcelUtil {
         //
         for (int i = 0; i < countColumnNum; i++) {
             HSSFRow row = sheet.createRow(i + 1);
-            FormBean FormBean = list.get(i);
+            TotalBillBean totalBillBean = list.get(i);
             for (int column = 0; column < options.length; column++) {
-                HSSFCell no = row.createCell(0);
-                HSSFCell name = row.createCell(1);
-                HSSFCell age = row.createCell(2);
-                HSSFCell score = row.createCell(3);
-//                no.setCellValue(FormBean.getNo());
-//                name.setCellValue(FormBean.getName());
-//                age.setCellValue(FormBean.getAge());
-//                score.setCellValue(FormBean.getScore());
+                HSSFCell name = row.createCell(0);
+                HSSFCell money = row.createCell(1);
+
+                name.setCellValue(totalBillBean.getName());
+                money.setCellValue(totalBillBean.getMoney().toString());
+
             }
         }
         File file = new File(path);
@@ -206,7 +204,7 @@ public class ExcelUtil {
         os.close();
     }
     
-    public void writeXlsx(List<FormBean> list, String path) throws Exception {
+    public void writeXlsx(List<TotalBillBean> list, String path) throws Exception {
         if (list == null) {
             return;
         }
@@ -217,7 +215,7 @@ public class ExcelUtil {
         // option at first row.
         XSSFRow firstRow = sheet.createRow(0);
         XSSFCell[] firstCells = new XSSFCell[countColumnNum];
-        String[] options = { "no", "name", "age", "score" };
+        String[] options = { "name", "money"};
         for (int j = 0; j < options.length; j++) {
             firstCells[j] = firstRow.createCell(j);
             firstCells[j].setCellValue(new XSSFRichTextString(options[j]));
@@ -225,16 +223,12 @@ public class ExcelUtil {
         //
         for (int i = 0; i < countColumnNum; i++) {
             XSSFRow row = sheet.createRow(i + 1);
-            FormBean FormBean = list.get(i);
+            TotalBillBean totalBillBean = list.get(i);
             for (int column = 0; column < options.length; column++) {
-                XSSFCell no = row.createCell(0);
-                XSSFCell name = row.createCell(1);
-                XSSFCell age = row.createCell(2);
-                XSSFCell score = row.createCell(3);
-//                no.setCellValue(FormBean.getNo());
-//                name.setCellValue(FormBean.getName());
-//                age.setCellValue(FormBean.getAge());
-//                score.setCellValue(FormBean.getScore());
+                XSSFCell name = row.createCell(0);
+                XSSFCell money = row.createCell(1);
+                name.setCellValue(totalBillBean.getName());
+                money.setCellValue(totalBillBean.getMoney().toString());
             }
         }
         File file = new File(path);
@@ -245,6 +239,23 @@ public class ExcelUtil {
     }
    
 
+    
+    private  FormBean generFormBean(String totalmoney,String totalName){
+    	
+    	FormBean formBean=new FormBean();
+        formBean.setMoney(totalmoney);
+        formBean.setPeopleName(totalName);
+        
+        BigDecimal allMoney=new BigDecimal(totalmoney);
+        BigDecimal divMoney=new BigDecimal(24);
+        BigDecimal workinghoursBigDecimal=allMoney.divide(divMoney,1,BigDecimal.ROUND_HALF_UP);
+       
+        formBean.setWorkinghoursBigDecimal(workinghoursBigDecimal);
+       
+      return formBean;
+        
+    	
+    }
 
  
 

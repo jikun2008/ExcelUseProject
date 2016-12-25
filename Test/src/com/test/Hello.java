@@ -7,10 +7,14 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.filechooser.FileSystemView;
 
+import com.test.excel.utils.DateUtils;
 import com.test.excel.utils.ExcelUtil;
 import com.test.excel.utils.ExelTitleUtil;
 import com.test.vo.FormBean;
+import com.test.vo.TotalBillBean;
+import com.test.vo.WorkerBean;
 
 import javax.swing.JButton;
 import javax.swing.JFileChooser;
@@ -21,6 +25,9 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.File;
 import java.io.IOException;
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.awt.GridLayout;
@@ -119,6 +126,9 @@ public class Hello {
 	
 		frame.setLocation(screenWidth / 2 - windowWidth / 2, screenHeight / 2 - windowHeight / 2);// 设
 	}
+	
+	private String parentPath;
+	private String filename;
 	private void showFileDialog(){
         JFileChooser jfc=new JFileChooser();  
         jfc.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES );  
@@ -134,7 +144,22 @@ public class Hello {
             System.out.println("文件:"+file.getAbsolutePath());  
         }  
         System.out.println(jfc.getSelectedFile().getName());  
+
+        filename=jfc.getSelectedFile().getName();
+        parentPath= file.getParentFile().getAbsolutePath();
+			System.out.println("parentPath="+parentPath);
         readExcel(file);
+        
+       
+   
+
+			
+//			//当前用户桌面
+//			File desktopDir = FileSystemView.getFileSystemView()
+//			.getHomeDirectory();
+//			String desktopPath = desktopDir.getAbsolutePath();
+//			canonicalPath=desktopPath;
+
 	}
 	
 	
@@ -143,7 +168,8 @@ public class Hello {
 		ExcelUtil  excelUtil =new ExcelUtil();
 		try {
 			List<FormBean> formBeans=	excelUtil.readExcel(file.getAbsolutePath());
-           System.out.println(formBeans.toString());
+           //System.out.println(formBeans.toString());
+           generWorkerBeanList(formBeans);
 		
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
@@ -151,6 +177,87 @@ public class Hello {
 		}
 		
 	}
+	
+	
+	public void generWorkerBeanList(List<FormBean> formBeans){
+
+	    List<WorkerBean> workbeans=new ArrayList<>();
+		for(FormBean formBean: formBeans){
+			
+			String peopleNmae=formBean.getPeopleName();
+			String[] nameList=	peopleNmae.split( "[、，]");
+			
+			
+			for(String name:nameList){
+				WorkerBean workerBean=new WorkerBean();
+				workerBean.setName(name);
+				
+				BigDecimal  divideMoney=new BigDecimal(nameList.length);
+			    BigDecimal money=formBean.getWorkinghoursBigDecimal().divide(divideMoney,1,BigDecimal.ROUND_HALF_UP);
+				workerBean.setMoney(money);
+				workbeans.add(workerBean);
+			
+	
+			
+			}
+		
+		}
+		
+		System.out.println(workbeans.toString());
+		
+		for(WorkerBean workerBean:workbeans){
+			if(workerBean.getName().equals("袁江峰")){
+				System.out.println(workerBean.toString());
+			
+			
+			}
+		}
+		
+		
+		generTotalBillMoney(workbeans);
+		//System.out.println(workbeans.toString());
+		
+	}
+	
+    private void generTotalBillMoney( List<WorkerBean> workbeanList){
+    	
+    	List<TotalBillBean> totalBillBeans=new ArrayList<>();
+    	
+    	Map<String, BigDecimal> map=new HashMap<>();
+    	for(WorkerBean workerBean:workbeanList){
+    		if(map.get(workerBean.getName())==null){
+    			map.put(workerBean.getName(), workerBean.getMoney());	
+    		}else{
+    			BigDecimal nowMoney=map.get(workerBean.getName());
+    			BigDecimal totalMoney=nowMoney.add(workerBean.getMoney());
+    			map.put(workerBean.getName(), totalMoney);
+    		}
+    	
+    	}
+    	   for (Map.Entry<String, BigDecimal> entry : map.entrySet()) {
+    		   TotalBillBean totalBillBean=new TotalBillBean();
+    		   totalBillBean.setName( entry.getKey());
+    		   totalBillBean.setMoney(entry.getValue());
+    		   totalBillBeans.add(totalBillBean);
+    	   }
+    	//System.out.println("Map统计"+map.get("袁江峰"));
+    	   writeExcel(totalBillBeans);
+
+    	
+    }
+    
+    private void  writeExcel(List<TotalBillBean> totalBillBeans){
+ 	   ExcelUtil  excelUtil =new ExcelUtil();
+ 	 
+ 	   String time= DateUtils.getNow(DateUtils.FORMAT_LONG_CN);
+ 	   String path=parentPath+File.separator+"统计工时总工资"+time+filename;
+ 	   try {
+		excelUtil.writeExcel(totalBillBeans, path);
+	} catch (Exception e) {
+		// TODO Auto-generated catch block
+		e.printStackTrace();
+	}
+    }
 	/**
 	 * key=15---value=工时费
 key=17---value=维修人员姓名

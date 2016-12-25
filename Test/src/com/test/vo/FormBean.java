@@ -4,6 +4,9 @@ import java.math.BigDecimal;
 
 public class FormBean {
 	
+	
+	private String claimNumberBill;
+	
 	public String money;
 	
 	public BigDecimal workinghoursBigDecimal;//工时费
@@ -26,11 +29,20 @@ public class FormBean {
 	public void setMoney(String money) {
 		this.money = money;
 	}
+	
+	
+	public String getClaimNumberBill() {
+		return claimNumberBill;
+	}
+	public void setClaimNumberBill(String claimNumberBill) {
+		this.claimNumberBill = claimNumberBill;
+	}
 	@Override
 	public String toString() {
-		return "FormBean [money=" + money + ", workinghoursBigDecimal=" + workinghoursBigDecimal + ", peopleName="
-				+ peopleName + "]";
+		return "FormBean [claimNumberBill=" + claimNumberBill + ", money=" + money + ", workinghoursBigDecimal="
+				+ workinghoursBigDecimal + ", peopleName=" + peopleName + "]";
 	}
+
 	
 	
 	
