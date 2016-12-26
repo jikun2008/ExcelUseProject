@@ -31,7 +31,13 @@ import com.test.vo.TotalBillBean;
  * @created 2014-5-20
  */
 public class ExcelUtil {
-    
+	private int nameIndex=0;
+	private int moneyIndex=0;
+	
+	public ExcelUtil(int nameIndex,int moneyIndex){
+		this.nameIndex=nameIndex;
+		this.moneyIndex=moneyIndex;
+	}
     public void writeExcel(List<TotalBillBean> list, String path) throws Exception {
         if (list == null) {
             return;
@@ -99,8 +105,8 @@ public class ExcelUtil {
             for (int rowNum = 1; rowNum <= xssfSheet.getLastRowNum(); rowNum++) {
                 XSSFRow xssfRow = xssfSheet.getRow(rowNum);
                 if (xssfRow != null) {
-                    XSSFCell money = xssfRow.getCell(15);
-                    XSSFCell name = xssfRow.getCell(17);
+                    XSSFCell money = xssfRow.getCell(moneyIndex);
+                    XSSFCell name = xssfRow.getCell(nameIndex);
           
                     
                     FormBean formBean =generFormBean( getValue(money),getValue(name));
@@ -135,8 +141,8 @@ public class ExcelUtil {
                 HSSFRow hssfRow = hssfSheet.getRow(rowNum);
                 if (hssfRow != null) {
               
-                    HSSFCell money = hssfRow.getCell(15);
-                    HSSFCell name = hssfRow.getCell(17);
+                    HSSFCell money = hssfRow.getCell(moneyIndex);
+                    HSSFCell name = hssfRow.getCell(nameIndex);
                
                     FormBean formBean =generFormBean( getValue(money),getValue(name));
                     list.add(formBean);
@@ -247,7 +253,7 @@ public class ExcelUtil {
         formBean.setPeopleName(totalName);
         
         BigDecimal allMoney=new BigDecimal(totalmoney);
-        BigDecimal divMoney=new BigDecimal(24);
+        BigDecimal divMoney=new BigDecimal(26);
         BigDecimal workinghoursBigDecimal=allMoney.divide(divMoney,1,BigDecimal.ROUND_HALF_UP);
        
         formBean.setWorkinghoursBigDecimal(workinghoursBigDecimal);
@@ -255,6 +261,11 @@ public class ExcelUtil {
       return formBean;
         
     	
+    }
+    
+    public interface OnReadExcelListener{
+    	void onFail();
+    	void onSuccess();
     }
 
  

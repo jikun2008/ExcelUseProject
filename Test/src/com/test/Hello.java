@@ -15,6 +15,8 @@ import com.test.excel.utils.ExelTitleUtil;
 import com.test.vo.FormBean;
 import com.test.vo.TotalBillBean;
 import com.test.vo.WorkerBean;
+import com.test.wiget.FileDialogHelper;
+import com.test.wiget.FileDialogHelper.OnFileChooseListener;
 
 import javax.swing.JButton;
 import javax.swing.JFileChooser;
@@ -34,21 +36,21 @@ import java.awt.GridLayout;
 
 public class Hello {
 
-	private JFrame frame;
+	private JFrame frame;//显示的界面效果
 	
-	private JButton button;
+	private JButton button;//显示Button
 	
-	private JLabel lblNewLabel;
+	private JLabel lblNewLabel;//显示标签
 	
 	
-	int screenWidth ;//获取屏幕的宽
+	int screenWidth ;//屏幕的宽
 
-	int screenHeight ;//获取屏幕的高
+	int screenHeight ;//屏幕的高
 	
 	
-	int windowWidth;// 获得窗口宽
+	int windowWidth;// 窗口宽
 
-	int windowHeight; // 获得窗口高
+	int windowHeight; // 窗口高
 
 	/**
 	 * Launch the application.
@@ -67,7 +69,7 @@ public class Hello {
 	}
 
 	/**
-	 * Create the application.
+	 * 初始化控件
 	 */
 	public Hello() {
 		initialize();
@@ -79,27 +81,15 @@ public class Hello {
 	private void initialize() {
 
 		initFrame();
-		button = new JButton("打开excle文件");
-		//button.setPreferredSize( frame.getWidth()/2, frame.getWidth()/2);
-		button.addMouseListener(new MouseAdapter() {
-			@Override
-			public void mouseClicked(MouseEvent arg0) {
-				showFileDialog();
-			}
-		});
-		button.setBounds(0,0, frame.getWidth()/10, frame.getWidth()/20);
-		frame.getContentPane().add(button);
-		 
+        initButton();
+		initLabel();
 
-		
-		 lblNewLabel = new JLabel("New label");
-		 lblNewLabel.setBounds(frame.getWidth()/10, frame.getWidth()/20, 500, 500);
-		frame.getContentPane().add(lblNewLabel);
-	
-	
-		
 	}
 	
+	
+	/**
+	 * 初始化Frame
+	 */
 	private void initFrame(){
 
 		
@@ -107,9 +97,6 @@ public class Hello {
 		frame.setBounds(100, 100, 450, 300);
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		
-
-
-
 		Toolkit kit = Toolkit.getDefaultToolkit(); // 定义工具包
 
 		Dimension screenSize = kit.getScreenSize(); // 获取屏幕的尺寸
@@ -122,50 +109,112 @@ public class Hello {
 		int windowWidth = frame.getWidth(); // 获得窗口宽
 
 		int windowHeight = frame.getHeight(); // 获得窗口高
-
 	
 		frame.setLocation(screenWidth / 2 - windowWidth / 2, screenHeight / 2 - windowHeight / 2);// 设
 	}
 	
+	/**
+	 * 初始化Button
+	 */
+	private void initButton(){
+		button = new JButton("打开excle文件");
+		button.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent arg0) {
+				showFileDialog();
+			}
+		});
+		button.setBounds(0,0, frame.getWidth()/10, frame.getWidth()/20);
+		frame.getContentPane().add(button);
+	}
+
+	
+	/**
+	 * 初始化Label
+	 */
+	private void initLabel(){
+		lblNewLabel = new JLabel("");
+		lblNewLabel.setBounds(frame.getWidth()/10, frame.getWidth()/20, 500, 500);
+		frame.getContentPane().add(lblNewLabel);
+	}
+	
 	private String parentPath;
+	
 	private String filename;
+	
+	private StringBuilder opercationInfo;
+	
 	private void showFileDialog(){
-        JFileChooser jfc=new JFileChooser();  
-        jfc.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES );  
-        jfc.showDialog(new JLabel(), "选择");  
-        File file=jfc.getSelectedFile();  
-        if(null==file){
-        	 System.out.println("取消");  
-        	return;
-        }
-        if(file.isDirectory()){  
-            System.out.println("文件夹:"+file.getAbsolutePath());  
-        }else if(file.isFile()){  
-            System.out.println("文件:"+file.getAbsolutePath());  
-        }  
-        System.out.println(jfc.getSelectedFile().getName());  
-
-        filename=jfc.getSelectedFile().getName();
-        parentPath= file.getParentFile().getAbsolutePath();
-			System.out.println("parentPath="+parentPath);
-        readExcel(file);
-        
-       
-   
-
+		lblNewLabel.setText("");
+		addText("\n打开文件对话框");
+		FileDialogHelper fileDialogHelper=new FileDialogHelper();
+		fileDialogHelper.showFileDialog(new OnFileChooseListener() {
 			
-//			//当前用户桌面
-//			File desktopDir = FileSystemView.getFileSystemView()
-//			.getHomeDirectory();
-//			String desktopPath = desktopDir.getAbsolutePath();
-//			canonicalPath=desktopPath;
+			@Override
+			public void onSucess(int type, File file, JFileChooser jfc) {
+				// TODO Auto-generated method stub
+		        filename=jfc.getSelectedFile().getName();//获取选择的文件名
+		        parentPath= file.getParentFile().getAbsolutePath();
+					System.out.println("parentPath="+parentPath);
+					 addText("选择文件完成："+parentPath);
+					 readTitleExcel(file);
+					 readExcel(file);
+		       
+			}
+			
+			@Override
+			public void onFail(int type, String errorInfo) {
+				// TODO Auto-generated method stub
+				addText("选择文件完成：errorInfo");
+			}
+		});
 
 	}
 	
 	
 	
+	private int nameIndex=0;
+	private int moneyIndex=0;
+
+	/**
+	 * 
+	 * @param file
+	 */
+	private void readTitleExcel(File file){
+		ExelTitleUtil  exelTitleUtil =new ExelTitleUtil();
+		try {
+			Map< Integer,String> map=	exelTitleUtil.readTitle(file.getAbsolutePath());
+			//reshGridAdater(1, map);
+			for (Map.Entry entry : map.entrySet()) {       
+			    
+			    Integer key = (Integer) entry.getKey( );    
+			    String value = (String) entry.getValue(); 
+			    if(value.equals("工时费")){
+			    	moneyIndex=key;
+			    	System.out.println("工时费----key="+key+"---value="+value);
+			    }
+			    
+			    if(value.equals("维修人员姓名")){
+			    	nameIndex=key;
+			    	 System.out.println("维修人员姓名----key="+key+"---value="+value);
+			    }
+			    
+			    
+			    System.out.println("key="+key+"---value="+value);
+			    //lblNewLabel.setText(value);
+			    
+			}    
+		
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+	
+	
 	private void readExcel(File file){
-		ExcelUtil  excelUtil =new ExcelUtil();
+		ExcelUtil  excelUtil =new ExcelUtil(nameIndex,moneyIndex);
+		addText("准备读取execl文件的信息");
 		try {
 			List<FormBean> formBeans=	excelUtil.readExcel(file.getAbsolutePath());
            //System.out.println(formBeans.toString());
@@ -174,6 +223,7 @@ public class Hello {
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
+			addText("读取execl文件的出错"+e.toString());
 		}
 		
 	}
@@ -197,25 +247,13 @@ public class Hello {
 				workerBean.setMoney(money);
 				workbeans.add(workerBean);
 			
-	
-			
 			}
 		
 		}
 		
 		System.out.println(workbeans.toString());
 		
-		for(WorkerBean workerBean:workbeans){
-			if(workerBean.getName().equals("袁江峰")){
-				System.out.println(workerBean.toString());
-			
-			
-			}
-		}
-		
-		
 		generTotalBillMoney(workbeans);
-		//System.out.println(workbeans.toString());
 		
 	}
 	
@@ -240,50 +278,39 @@ public class Hello {
     		   totalBillBean.setMoney(entry.getValue());
     		   totalBillBeans.add(totalBillBean);
     	   }
-    	//System.out.println("Map统计"+map.get("袁江峰"));
+    	   addText("准备读取execl文件的成功");
     	   writeExcel(totalBillBeans);
 
     	
     }
     
     private void  writeExcel(List<TotalBillBean> totalBillBeans){
- 	   ExcelUtil  excelUtil =new ExcelUtil();
+    	 addText("准备生成统计工时的excel文件");
+ 	   ExcelUtil  excelUtil =new ExcelUtil(nameIndex,moneyIndex);
  	 
  	   String time= DateUtils.getNow(DateUtils.FORMAT_LONG_CN);
  	   String path=parentPath+File.separator+"统计工时总工资"+time+filename;
  	   try {
 		excelUtil.writeExcel(totalBillBeans, path);
+		File file=new File(path);
+		if(file.exists()){
+			 addText("生成统计工时的excel文件成功");
+
+			System.out.println("文件存在"+path);
+			Runtime.getRuntime().exec(
+	                "rundll32 SHELL32.DLL,ShellExec_RunDLL " +
+	                "Explorer.exe /select," + path);
+		}else{
+			System.out.println("文件不存在"+path);
+		}
+	
+
 	} catch (Exception e) {
 		// TODO Auto-generated catch block
 		e.printStackTrace();
 	}
     }
-	/**
-	 * key=15---value=工时费
-key=17---value=维修人员姓名
-	 * @param file
-	 */
-	
-	private void readTitleExcel(File file){
-		ExelTitleUtil  exelTitleUtil =new ExelTitleUtil();
-		try {
-			Map< Integer,String> map=	exelTitleUtil.readTitle(file.getAbsolutePath());
-			reshGridAdater(1, map);
-			for (Map.Entry entry : map.entrySet()) {       
-			    
-			    Integer key = (Integer) entry.getKey( );    
-			    String value = (String) entry.getValue(); 
-			    
-			    System.out.println("key="+key+"---value="+value);
-			    lblNewLabel.setText(value);
-			    
-			}    
-		
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-	}
+
 
 	/**
 	 * 
@@ -312,4 +339,14 @@ key=17---value=维修人员姓名
         scrollPane.setBounds(10, 10, windowWidth, windowHeight);
         frame.getContentPane().add(scrollPane);
     }
+   
+    
+    private void addText(String text){
+	
+		String nowText=lblNewLabel.getText();
+		StringBuilder stringBuilder=new StringBuilder(nowText);
+		stringBuilder.append("---》"+text);
+		lblNewLabel.setText(stringBuilder.toString());
+    }
+
 }

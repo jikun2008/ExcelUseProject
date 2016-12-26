@@ -28,7 +28,7 @@ public final class DateUtils {
     /**
      * 中文全称 如：2010年12月01日 23时15分06秒
      */
-    public static String FORMAT_LONG_CN = "yyyy年MM月dd日  HH时mm分ss秒";
+    public static String FORMAT_LONG_CN = "yyyy年MM月dd日HH时mm分ss秒";
     /**
      * 精确到毫秒的完整中文时间
      */
